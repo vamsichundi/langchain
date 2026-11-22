@@ -5,7 +5,9 @@
 3. langchain.agents
 4. langchain.messages
 5. langchain.tools
-6. tavily
+6. langchain.types
+7. langgraph.checkpoint.memory
+8. tavily
 
 ### Python useful packages and how to use
 
@@ -288,4 +290,179 @@ Amaravati is the capital of Andhra Pradesh.
 Context:
 - Hyderabad served as the shared capital for Andhra Pradesh and Telangana until June 2, 2024.
 - In 2026, Amaravati was legally recognized as the sole capital of Andhra Pradesh (retroactively from June 2, 2024).
+```
 
+### Messages to be saved (Inmemory Checkpoint saver) Temporarrily 
+
+``` python
+
+from langchain.agents import create_agent
+from langchain.messages import HumanMessage
+from langgraph.checkpoint.memory import InMemorySaver
+
+agent = create_agent(
+    "gpt-5-nano",
+    checkpointer = InMemorySaver(),
+)
+
+config = {
+    "configurable": { "thread_id": "1"}}
+}
+messages = {
+    "messages": []
+}
+response = agent.invoke(messages, config)
+print(response)
+
+```
+
+### passing images to model
+
+```python
+
+
+from dotenv import load_dotenv
+from langchain.tools import tool
+from langchain.agents import create_agent
+from langchain.messages import HumanMessage
+from ipywidgets import FileUpload
+from IPython.display import display
+import base64
+
+load_dotenv()
+
+uploader = FileUpload(accept=".jpg,.png", multiple=False)
+display(uploader)
+
+uploaded_file = uploader.value[0]
+file_name = uploaded_file["metadata"]["name"]
+file_content = uploaded_file["content"]
+
+file_binary = bytes(file_content)
+file_base64 = base64.b64encode(file_binary).decode("utf-8")
+
+agent = create_agent(
+    model="gpt-5-nano", system_prompt="You are able to search the web for information"
+)
+
+multiModalInput = {
+    "messages": [
+        HumanMessage(
+            content=[
+                {"type": "text", "text": "What is this image about?"},
+                {
+                    "type": "image",
+                    "base64": file_base64,
+                    "mime_type": uploaded_file["metadata"]["type"],
+                },
+            ]
+        )
+    ]
+}
+
+response = agent.invoke(multiModalInput)
+print(response.content[0].text)
+
+```
+
+Example for small agent related to personal chef
+
+```python
+from langchain.agents import create_agent
+from langchain.messages import HumanMessage
+from dotenv import load_dotenv
+from langchain.tools import tool
+from langgraph.checkpoint.memory import InMemorySaver
+from tavily import TavilyClient
+from typing import Any, Dict
+from pprint import pprint
+
+load_dotenv()
+
+tavily_client = TavilyClient()
+
+@tool("get_recipe", description="Get a recipe for a given dish")
+def get_recipe(ingredient: str) -> Dict[str, Any]:
+    """Get a recipe for a given ingredient"""
+    return tavily_client.search(ingredient)
+
+question = {
+    "messages": [
+        HumanMessage(content="What is a good recipe for pulihora?")   
+    ]
+}
+config = {
+    "configurable": {
+        "thread_id": "1"
+    }
+}
+
+system_prompt = "You are a personal chef that can help me with recipes and cooking tips."
+agent = create_agent(
+    model="gpt-5-nano",
+    system_prompt=system_prompt,
+    tools=[get_recipe],
+    checkpointer=InMemorySaver(),
+)
+
+response = agent.invoke(question, config=config)
+pprint(response['messages'][-1].content)
+```
+
+### Multi Agent Example
+
+```python
+from langchain.agents import create_agent
+from langchain.messages import HumanMessage
+from dotenv import load_dotenv
+from langchain.tools import tool
+from langgraph.checkpoint.memory import InMemorySaver
+from tavily import TavilyClient
+from typing import Any, Dict
+from pprint import pprint
+
+load_dotenv()
+tavily_client = TavilyClient()
+
+@tool("web_search", description="Search the web for information")
+def web_search(query: str) -> Dict[str, Any]:
+    """Search the web for information"""
+    return tavily_client.search(query)
+
+@tool("get_recipe", description="Get a recipe for a given dish")
+def get_recipe(ingredient: str) -> Dict[str, Any]:
+    """Get a recipe for a given ingredient"""
+    return tavily_client.search(ingredient)
+
+agent_chef = create_agent(
+    model="gpt-5-nano",
+    system_prompt="You are a personal chef that can help me with recipes and cooking tips.",
+    tools=[get_recipe],
+)
+
+agent_web = create_agent(
+    model="gpt-5-nano",
+    system_prompt="You are a helpful assistant.",
+    tools=[web_search],
+)
+
+@tool("call_web_search", description="Call the web search agent")
+def call_web_search(query: str) -> Dict[str, Any]:
+    response = agent_web.invoke({"messages": [HumanMessage(content=query)]})
+    return response["messages"][-1].content
+
+@tool("call_personal_chef", description="Call the personal chef agent")
+def call_personal_chef(ingredient: str) -> Dict[str, Any]:
+    response = agent_chef.invoke({"messages": [HumanMessage(content=ingredient)]})
+    return response["messages"][-1].content
+
+agent_multi = create_agent(
+    model="gpt-5-nano",
+    system_prompt="You are a helpful assistant that can call other agents to get information.",
+    tools=[call_web_search, call_personal_chef],
+)
+
+response = agent_multi.invoke({"messages": [HumanMessage(content="What is a good recipe for pulihora?")]})
+
+pprint(response["messages"][-1].content)
+```
