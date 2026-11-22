@@ -8,13 +8,13 @@
 
 ### Python useful packages and how to use
 
-```
+```python
 from pprint import pprint
 from dotenv import load_dotenv
 ``` 
 
 ### Initializing & invoking models chatmodels
-```
+```python
 from dotenv import load_dotenv
 from langchain.chat_models import init_chat_model
 
@@ -35,7 +35,7 @@ pprint(response.response_metadata)
 
 ## For google gen ai
 
-```
+```python
 from langchain_google_genai import ChatGoogleGenerativeAI
 
 model = ChatGoogleGenerativeAI(model = "gemini-3-pro-preview")
@@ -44,7 +44,7 @@ model = ChatGoogleGenerativeAI(model = "gemini-3-pro-preview")
 ### Creating Agents
 
 we have 3 options to create agents
-```
+```python
 from langchain.agents import create_agent
 
 agent_1 = create_agent(model=model)
@@ -54,7 +54,7 @@ agent_3 = create_agent("gpt-5-nano")
 
 ### Invoking Agents & Passing Human Messages
 
-```
+```python
 from langchain.agents import create_agent
 from langchain.messages import HumanMessage
 
@@ -133,7 +133,7 @@ pprint(response['messages'])
 
 ### Passing array of Human / AI messages to Agent model
 
-```
+```python
 from langchain.agents import create_agent
 from langchain.messages import HumanMessage
 
@@ -151,7 +151,7 @@ pprint(response)
 
 ### Streaming Output from Model Response
 
-```
+```python
 from langchain.agents import create_agent
 from langchain.messages import AIMessage, HumanMessage
 
@@ -169,7 +169,7 @@ print()
 
 ### To increase model performance pass a system prompt when creating agent
 
-```
+```python
 system_prompt = """
 
 you are sr react developer, please analyze the UI developer
@@ -190,5 +190,40 @@ dev_agent = create_agent(
 Tools can allow our agent to access data, execute data, even tasks, call agents, call api's
 
 <img width="1948" height="1508" alt="image" src="https://github.com/user-attachments/assets/56d34e3c-ba35-43d1-9017-26a9acb1521d" />
+
+## Creating tools & Adding to agents
+
+```python
+from langchain.tools import tool
+from langchain.agents import create_agent
+from langchain.messages import HumanMessage 
+
+@tool("square_root")
+def tool1(x: float) -> float:
+    """ Calculate the square root of a number """
+    return x ** 0.5
+
+@tool("square_root", description = "Calculate the square root of a number ")
+def tool1(x: float) -> float:
+    return x ** 0.5
+
+# tool1.invoke({ "x": 100 })
+
+agent = create_agent(
+  model = "gpt-5-nano",
+  system_prompt = "You are able to maths functions",
+  tools = [tool1]
+)
+
+response.invoke({
+    "messages": [HumanMessage(content = "what is the square root of 467")]
+})
+
+print(response['messages'[[-1].content)
+print(response['messages'])
+print(response['messages'].tool_calls)
+
+# it will return toolmessage in response
+```
 
               
