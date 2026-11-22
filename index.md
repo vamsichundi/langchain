@@ -5,6 +5,7 @@
 3. langchain.agents
 4. langchain.messages
 5. langchain.tools
+6. tavily
 
 ### Python useful packages and how to use
 
@@ -226,4 +227,65 @@ print(response['messages'].tool_calls)
 # it will return toolmessage in response
 ```
 
-              
+### Searching Web for latest info (Using Tavily)
+
+```python
+from dotenv import load_dotenv
+from langchain.tools import tool
+from langchain.agents import create_agent
+from langchain.messages import HumanMessage 
+
+
+load_dotenv()
+
+agent = create_agent(
+  model = "gpt-5-nano",
+  system_prompt = "You are able to maths functions"
+)
+
+response = agent.invoke({
+    "messages": [HumanMessage(content = "who is the president of current mayor (president of houston city")]
+})
+
+print(response['messages'][-1].content)
+```
+
+### Using Tavily tool for web crawl
+
+```python
+from dotenv import load_dotenv
+from langchain.tools import tool
+from langchain.agents import create_agent
+from langchain.messages import HumanMessage 
+from tavily import TavilyClient
+from typing import List, Dict, Any
+
+
+load_dotenv()
+
+tavily_client = TavilyClient()
+
+
+@tool("web_search", description="Search the web for information")
+def web_search(query: str) -> List[Dict[str, Any]]:
+    return tavily_client.search(query)
+
+web_search.invoke("What is the capital of Andhra Pradesh?")
+
+agent = create_agent(
+  model = "gpt-5-nano",
+  system_prompt = "You are able to search the web for information",
+  tools = [web_search]
+)
+
+response = agent.invoke({
+    "messages": [HumanMessage(content = "What is the capital of Andhra Pradesh?")]
+})
+
+#print(response['messages'][-1].content)
+Amaravati is the capital of Andhra Pradesh.
+
+Context:
+- Hyderabad served as the shared capital for Andhra Pradesh and Telangana until June 2, 2024.
+- In 2026, Amaravati was legally recognized as the sole capital of Andhra Pradesh (retroactively from June 2, 2024).
+
