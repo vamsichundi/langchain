@@ -5,7 +5,7 @@
 3. langchain.agents
 4. langchain.messages
 5. langchain.tools
-6. langchain.types
+6. langgraph.types
 7. langgraph.checkpoint.memory
 8. tavily
 
