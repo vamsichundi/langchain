@@ -39,6 +39,7 @@ agent = create_agent(
         update_favourite_colour,
     ],
     checkpointer=InMemorySaver(),
+    middleware=[]
 )
 ```
 
