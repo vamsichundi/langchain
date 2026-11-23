@@ -17,7 +17,24 @@
 ```python
 from pprint import pprint
 from dotenv import load_dotenv
-``` 
+```
+### example for creating agent
+
+```python
+agent = create_agent(
+    "gpt-5-nano",
+    system_prompt="You are a helpful assistant that can remember my favorite colors.",
+    context_schema=ContextState,
+    state_schema=FavouriteColor,
+    tools=[
+        get_most_favorite_color,
+        get_least_favorite_color,
+        get_favourite_colour,
+        update_favourite_colour,
+    ],
+    checkpointer=InMemorySaver(),
+)
+```
 
 ### Initializing & invoking models chatmodels
 ```python
