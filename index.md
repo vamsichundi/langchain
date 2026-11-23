@@ -23,6 +23,11 @@ from dotenv import load_dotenv
 ```python
 agent = create_agent(
     "gpt-5-nano",
+    model_kwargs={
+      "temperature": 0.5,
+      "max_tokens": 5000,
+      "use_responses_api": True
+    }
     system_prompt="You are a helpful assistant that can remember my favorite colors.",
     context_schema=ContextState,
     state_schema=FavouriteColor,
