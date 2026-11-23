@@ -471,3 +471,106 @@ pprint(response["messages"][-1].content)
 ```
 
 ### Using context and state
+
+from dataclasses import dataclass
+
+from langchain.agents import create_agent, AgentState
+from langchain.messages import HumanMessage, ToolMessage
+from langchain.tools import tool, ToolRuntime
+from langgraph.types import Command
+from langgraph.checkpoint.memory import InMemorySaver
+from langchain.chat_models import init_chat_model
+from dotenv import load_dotenv
+
+load_dotenv()
+
+
+class FavouriteColor(AgentState):
+    favorite_color: str
+
+
+@dataclass
+class ContextState:
+    most_favorite_color: str = "blue"
+    least_favorite_color: str = "brown"
+
+
+@tool("get_most_favorite_color", description="Get my most favorite color")
+def get_most_favorite_color(runtime: ToolRuntime) -> str:
+    return runtime.context.most_favorite_color
+
+
+@tool("get_least_favorite_color", description="Get my least favorite color")
+def get_least_favorite_color(runtime: ToolRuntime) -> str:
+    return runtime.context.least_favorite_color
+
+@tool(
+    "update_favourite_colour",
+    description="Update the favourite colour of the user in the state once they've revealed it.",
+)
+def update_favourite_colour(favourite_colour: str, runtime: ToolRuntime) -> Command:
+    return Command(
+        update={
+            "favourite_colour": favourite_colour,
+            "messages": [
+                ToolMessage(
+                    "Successfully updated favourite colour",
+                    tool_call_id=runtime.tool_call_id,
+                )
+            ],
+        }
+    )
+
+@tool(
+    "get_favourite_colour",
+    description="Get the favourite colour of the user from the state.",
+)
+def get_favourite_colour(runtime: ToolRuntime) -> str:
+    try:
+        return runtime.state.favourite_colour
+    except KeyError:
+        return "Favourite colour not found"
+
+agent = create_agent(
+    "gpt-5-nano",
+    system_prompt="You are a helpful assistant that can remember my favorite colors.",
+    context_schema=ContextState,
+    state_schema=FavouriteColor,
+    tools=[
+        get_most_favorite_color,
+        get_least_favorite_color,
+        get_favourite_colour,
+        update_favourite_colour,
+    ],
+    checkpointer=InMemorySaver(),
+)
+
+config = {
+    "configurable": {
+        "thread_id": "1",
+    }
+}
+# context
+response = agent.invoke(
+    {"messages": [HumanMessage(content="What is my favourite colour?")]},
+    context=ContextState()
+)
+
+#state (write)
+
+response = agent.invoke(
+    { 
+        "messages": [HumanMessage(content="Hello, how are you?")],
+        "favourite_colour": "green"
+    },
+    config
+)
+
+#state (read)
+response = agent.invoke(
+    {"messages": [HumanMessage(content="What is my most favorite color?")]},
+    config=config,
+)
+
+print(response["messages"][-1].content)
+
