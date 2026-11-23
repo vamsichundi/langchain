@@ -5,9 +5,12 @@
 3. langchain.agents
 4. langchain.messages
 5. langchain.tools
-6. langgraph.types
-7. langgraph.checkpoint.memory
-8. tavily
+6. langchain_mcp_adapters.client
+7. langchain.agents.middleware
+8. langgraph.types
+9. langgraph.runtime
+10. langgraph.checkpoint.memory
+11. tavily
 
 ### Python useful packages and how to use
 
@@ -466,3 +469,5 @@ response = agent_multi.invoke({"messages": [HumanMessage(content="What is a good
 
 pprint(response["messages"][-1].content)
 ```
+
+### Using context and state
