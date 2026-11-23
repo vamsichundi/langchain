@@ -472,6 +472,7 @@ pprint(response["messages"][-1].content)
 
 ### Using context and state
 
+```python
 from dataclasses import dataclass
 
 from langchain.agents import create_agent, AgentState
@@ -574,3 +575,4 @@ response = agent.invoke(
 
 print(response["messages"][-1].content)
 
+```
