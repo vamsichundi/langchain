@@ -7,10 +7,11 @@
 5. langchain.tools
 6. langchain_mcp_adapters.client
 7. langchain.agents.middleware
-8. langgraph.types
-9. langgraph.runtime
-10. langgraph.checkpoint.memory
-11. tavily
+8. langchain_community.utilities
+9. langgraph.types
+10. langgraph.runtime
+11. langgraph.checkpoint.memory
+12. tavily
 
 ### Python useful packages and how to use
 
