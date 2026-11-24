@@ -23,6 +23,7 @@ from dotenv import load_dotenv
 
 ```python
 agent = create_agent(
+    name="test_agent",
     "gpt-5-nano",
     model_kwargs={
       "temperature": 0.5,
