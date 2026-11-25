@@ -17,8 +17,10 @@ from typing import Union, TypedDict, Optional, Any
 1. from typing
 2. from random
 3. from pathlib
-4. from langgraph.graph
-5. from IPython.display
+4. from IPython.display
+5. from langgraph.graph
+6. from langchain_core.messages
+7. from langchain_openai
 
 ## Elements in Langgraph
 1. **state** - shared data structure that holds current info or context of entire application
