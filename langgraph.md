@@ -12,6 +12,14 @@
 from typing import Union, TypedDict, Optional, Any
 ```
 
+### python packages
+
+1. from typing
+2. from random
+3. from pathlib
+4. from langgraph.graph
+5. from IPython.display
+
 ## Elements in Langgraph
 1. **state** - shared data structure that holds current info or context of entire application
 2. **nodes** - Individual functions or operations that perform specific tasks within graph
