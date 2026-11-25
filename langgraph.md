@@ -7,6 +7,9 @@
 3. Optional
 4. Union
 5. Any
+6. List
+7. Annotated
+8. Sequence
 
 ```python
 from typing import Union, TypedDict, Optional, Any
@@ -19,8 +22,11 @@ from typing import Union, TypedDict, Optional, Any
 3. from pathlib
 4. from IPython.display
 5. from langgraph.graph
-6. from langchain_core.messages
-7. from langchain_openai
+6. from langgraph.graph.message
+7. from langgraph.prebuilt
+8. from langchain_core.messages
+9. from langchain_core.tools
+10. from langchain_openai
 
 ## Elements in Langgraph
 1. **state** - shared data structure that holds current info or context of entire application
